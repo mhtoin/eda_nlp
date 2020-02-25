@@ -65,22 +65,30 @@ def get_only_chars(line):
 
 def random_deletion(word, p):
     # don't delete tokens of just one character
-    if len(word) == 1:
+    print(f"Word is {word} and it's {len(word)} long")
+    if len(word) < 2:
         return word
 
     # randomly delete characters with probability p
     characters = []
+    new_token = ""
     for character in word:
         r = random.uniform(0, 1)
+        print(f"Starting deletion, r is {r} and p is {p}")
         if r > p:
-            characters.append(character)
+            new_token += character
+            print(f"Token is {new_token} at the moment")
+            #characters.append(character)
 
-    new_token = "".join(characters)
+    #new_token = "".join(characters)
 
     # if you end up deleting all chars, just return a random word
     if len(new_token) == 0:
+        print("Empty token!")
         rand_int = random.randint(0, len(word) - 1)
-        return [word[rand_int]]
+        random_word = word[rand_int]
+        print(f"Empty token, returning {random_word} instead")
+        return random_word
 
     return new_token
 
@@ -91,6 +99,9 @@ def random_deletion(word, p):
 ########################################################################
 
 def random_swap(word, n):
+    # Makes no sense to try to swap something with only 1 token
+    if len(word) < 2:
+        return word
     characters = [char for char in word]
     new_word = ""
     for _ in range(n):
@@ -112,41 +123,21 @@ def swap_chars(characters):
 
 def edac(word_token, alpha_rs=0.1, p_rd=0.1, num_aug=9):
     # Cleans the line/token - check if needed?
-    word_token = get_only_chars(word_token)
+    #word_token = get_only_chars(word_token)
     num_words = len(word_token)
 
-    augmented_tokens = []
-    num_new_per_technique = int(num_aug / 4) + 1
     n_rs = max(1, int(alpha_rs * num_words))
+    choices = [1, 2, 3]
 
+    # For each token choose to either swap, delete or just return the word
+    technique = random.choice(choices)
 
-    # rs
-    for _ in range(num_new_per_technique):
-        try:
-            a_words = random_swap(word_token, n_rs)
-            augmented_tokens.append(''.join(a_words))
-        except ValueError:
-            print("Cannot handle character")
-            pass
-    # rd
-    for _ in range(num_new_per_technique):
-        try:
-            a_words = random_deletion(word_token, p_rd)
-            augmented_tokens.append(''.join(a_words))
-        except ValueError:
-            print("Cannot handle character")
-            pass
-    augmented_tokens = [get_only_chars(word_token) for word_token in augmented_tokens]
-    shuffle(augmented_tokens)
-
-    # trim so that we have the desired number of augmented sentences
-    if num_aug >= 1:
-        augmented_tokens = augmented_tokens[:num_aug]
+    if technique == 1:
+        print("Swapping")
+        return random_swap(word_token, n_rs)
+    elif technique == 2:
+        print("Deleting")
+        return random_deletion(word_token, n_rs)
     else:
-        keep_prob = num_aug / len(augmented_tokens)
-        augmented_tokens = [s for s in augmented_tokens if random.uniform(0, 1) < keep_prob]
-
-    # append the original sentence
-    augmented_tokens.append(word_token)
-
-    return augmented_tokens
+        print("Doing nothing")
+        return word_token

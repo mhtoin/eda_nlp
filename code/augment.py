@@ -42,18 +42,25 @@ def gen_eda(train_orig, output_file, alpha, num_aug=9):
     lines = open(train_orig, 'r').readlines()
 
     for i, line in enumerate(lines):
-        print(line, len(line), line[0].isnumeric())
-
-        if line[0].isnumeric() or not line[0].isalnum() or re.match(r'/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\uff66-\uff9f]/', line[1]):
-            print("Passing empty line or ", line[0])
-            continue
-
         parts = line.split('\t')
-        label = parts[1]
-        token = parts[0]
-        aug_sentences = edac(token, alpha_rs=alpha, p_rd=alpha, num_aug=num_aug)
-        for aug_sentence in aug_sentences:
-            writer.write(aug_sentence + "\t" + label + '\n')
+
+        # If line actually has two parts, split and augment
+        if len(parts) > 1:
+            try:
+                print(f"Parts are {parts}")
+                label = parts[1]
+                token = parts[0]
+                print(f"{token} is {len(token)} long {label}")
+                aug_token = edac(token, alpha_rs=alpha, p_rd=alpha, num_aug=num_aug)
+                writer.write(aug_token + "\t" + label)
+            except TypeError as e:
+                print(f"Error with {aug_token} in {line}")
+                print(e)
+                writer.write(line)
+        else:
+            #Line is probaly just whitespace, write as is
+            print(f"Not handling {line.isspace()}")
+            writer.write(line)
 
     writer.close()
     print("generated augmented sentences with eda for " + train_orig + " to " + output_file + " with num_aug=" + str(
