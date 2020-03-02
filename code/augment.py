@@ -47,11 +47,12 @@ def gen_eda(train_orig, output_file, alpha, num_aug=9):
         # If line actually has two parts, split and augment
         if len(parts) > 1:
             try:
-                print(f"Parts are {parts}")
+                #print(f"Parts are {parts}")
                 label = parts[1]
                 token = parts[0]
-                print(f"{token} is {len(token)} long {label}")
+                #print(f"{token} is {len(token)} long {label}")
                 aug_token = edac(token, alpha_rs=alpha, p_rd=alpha, num_aug=num_aug)
+                print(aug_token)
                 writer.write(aug_token + "\t" + label)
             except TypeError as e:
                 print(f"Error with {aug_token} in {line}")
